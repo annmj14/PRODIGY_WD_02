@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stopwatch</title>
+</head>
+<style>
+body {
+  background-image: url('stopwatch.jpg');
+  background-size:cover;
+  background-position: center;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
+}
+
+.stopwatch {
+  text-align: center;
+}
+
+#display {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.circular-button {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: none;
+  font-size: 16px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+#startStop {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: rgb(78, 172, 78);
+}
+
+#pauseResume {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: rgba(0, 107, 222, 0.841);
+}
+
+#split {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: rgba(143, 142, 142, 0.841);
+}
+
+#reset {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: rgba(255, 47, 47, 0.764);
+}
+
+.circular-button:hover {
+  filter: brightness(1.4);
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+}
+
+button {
+  cursor: pointer;
+  color: #f0f0f0;
+}
+</style>
+
+<body>
+  <div class="stopwatch">
+    <div id="display">00:00:00:000</div>
+    <div class="controls">
+      <button id="startStop" class="circular-button">Start</button>
+      <button id="pauseResume" class="circular-button">Pause</button>
+      <button id="split" class="circular-button">Split</button>
+      <button id="reset" class="circular-button">Reset</button>
+    </div>
+    <ol id="lapTimes"></ol>
+  </div>
+  <script>
+    let startTime;
+    let running = false;
+    let paused = false;
+    let elapsedTime = 0;
+    let lapTimes = [];
+    let interval;
+
+    function startStop() {
+      if (running) {
+        clearInterval(interval);
+        running = false;
+        document.getElementById("startStop").textContent = "Start";
+      } else {
+        startTime = Date.now() - elapsedTime;
+        interval = setInterval(updateDisplay, 10);
+        running = true;
+        document.getElementById("startStop").textContent = "Stop";
+      }
+    }
+
+    function pauseResume() {
+      if (paused) {
+        startTime = Date.now() - elapsedTime;
+        interval = setInterval(updateDisplay, 10);
+        paused = false;
+        document.getElementById("pauseResume").textContent = "Pause";
+      } else {
+        clearInterval(interval);
+        paused = true;
+        document.getElementById("pauseResume").textContent = "Resume";
+      }
+    }
+
+    function lap() {
+      if (running) {
+        lapTimes.push(elapsedTime);
+        updateLapTimes();
+        document.getElementById("display").textContent = formatTime(elapsedTime);
+      }
+    }
+
+    function reset() {
+  clearInterval(interval);
+  document.getElementById("display").textContent = '00:00:00:000';
+  document.getElementById("startStop").textContent = "Start";
+  document.getElementById("pauseResume").textContent = "Pause";
+  lapTimes = [];
+  clearLapTimes();
+  running = false;
+  paused = false;
+  elapsedTime = 0;
+}
+
+    
+    function updateDisplay() {
+      let currentTime = Date.now();
+      elapsedTime = currentTime - startTime;
+      let hours = Math.floor(elapsedTime / 3600000);
+      let minutes = Math.floor((elapsedTime % 3600000) / 60000);
+      let seconds = Math.floor((elapsedTime % 60000) / 1000);
+      let milliseconds = Math.floor((elapsedTime % 1000));
+
+      document.getElementById("display").textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}:${padMilliseconds(milliseconds)}`;
+    }
+
+    function pad(number) {
+      return (number < 10 ? '0' : '') + number;
+    }
+
+    function padMilliseconds(number) {
+      if (number < 10) {
+        return '00' + number;
+      } else if (number < 100) {
+        return '0' + number;
+      } else {
+        return number;
+      }
+    }
+
+    function updateLapTimes() {
+      let lapList = document.getElementById("lapTimes");
+      lapList.innerHTML = "";
+      lapTimes.forEach((lapTime, index) => {
+        let lapItem = document.createElement("li");
+        lapItem.textContent = `Lap ${index + 1}: ${formatTime(lapTime)}`;
+        lapList.appendChild(lapItem);
+      });
+    }
+
+    function clearLapTimes() {
+      let lapList = document.getElementById("lapTimes");
+      lapList.innerHTML = "";
+    }
+
+    function formatTime(time) {
+      let hours = Math.floor(time / 3600000);
+      let minutes = Math.floor((time % 3600000) / 60000);
+      let seconds = Math.floor((time % 60000) / 1000);
+      let milliseconds = Math.floor((time % 1000));
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}:${padMilliseconds(milliseconds)}`;
+    }
+
+    document.getElementById("startStop").addEventListener("click", startStop);
+    document.getElementById("pauseResume").addEventListener("click", pauseResume);
+    document.getElementById("split").addEventListener("click", lap);
+    document.getElementById("reset").addEventListener("click", reset);
+
+  </script>
+</body>
+</html>
